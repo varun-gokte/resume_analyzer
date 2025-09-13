@@ -1,2 +1,4 @@
 .env
-init_commands
+init_commands.txt
+app/uploads
+__pycache__
