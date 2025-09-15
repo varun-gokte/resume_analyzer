@@ -2,7 +2,7 @@ from flask import Flask
 import os
 from .main import main
 from dotenv import load_dotenv
-from app.extensions import db
+from app.extensions import db, migrate
 
 load_dotenv()
 db_username = os.getenv('DB_USERNAME')
@@ -20,8 +20,7 @@ def create_app():
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     db.init_app(app)
-    with app.app_context():
-        db.create_all()
+    migrate.init_app(app, db)
 
     app.register_blueprint(main)
     
