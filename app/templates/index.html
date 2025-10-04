@@ -1,32 +1,46 @@
 {% extends 'base.html' %}
 {% block title %} Resume Analyzer {% endblock %}
 {% block content%} 
-<!-- Put this in your template (requires Bootstrap 5 CSS + optional Bootstrap JS) -->
-<h3>Upload your resume</h3>
+<h3>Resume Analyser</h3>
 
 <form enctype="multipart/form-data" method="post" class="container mt-4">
-  <div class="row g-3 align-items-stretch"> <!-- align-items-stretch lets columns match height -->
+  <div class="row g-3 align-items-stretch">
     <!-- LEFT: Dropzone box -->
-    <div class="col-md-6 d-flex">
-      <div id="dropzone" class="w-100 dropzone d-flex flex-column align-items-center justify-content-center p-4"
-           role="button" tabindex="0" aria-label="Upload resume (click or drag and drop)">
-        <!-- hidden file input -->
-        <input type="file" name="file" id="fileInput" class="d-none" accept=".pdf,.doc,.docx" />
+    <div class="col-md-6 d-flex flex-column gap-3 border rounded">
+      <div class="fw-semibold mb-2">Choose how to add your resume</div>
 
-        <!-- visible box content -->
-        <div class="text-center">
-          <!-- inline upload SVG icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="mb-2"
-               viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M.5 9.9V13a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V9.9a.5.5 0 0 0-1 0V13H1.5V9.9a.5.5 0 0 0-1 0z"/>
-            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V10.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-          </svg>
+      <!-- Choice cards -->
+      <div class="d-flex gap-3">
+        <div id="card-existing" class="choice-card flex-fill border rounded p-3 text-center active" role="button">
+          <i class="bi bi-folder2-open fs-3"></i>
+          <div class="fw-semibold mt-2">Use Existing</div>
+        </div>
+        <div id="card-upload" class="choice-card flex-fill border rounded p-3 text-center" role="button">
+          <i class="bi bi-upload fs-3"></i>
+          <div class="fw-semibold mt-2">Upload New</div>
+        </div>
+      </div>
 
-          <div id="dzText">
-            <strong>Drop your resume here</strong>
-            <div class="small text-muted">or click to browse (PDF/DOC)</div>
-            <div id="selectedFile" class="small mt-2 text-truncate" style="max-width:240px;"></div>
-          </div>
+      <!-- Existing file dropdown -->
+      <div id="existingContainer" class="mt-3">
+        <label for="existingFile" class="form-label">Select a resume</label>
+        <select name="existingFile" id="existingFile" class="form-select">
+          <option value="">-- Choose a resume --</option>
+          {% for resume in resumeList %}
+            <option value="{{ resume.id }}">{{ resume.filename }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Upload container -->
+      <div id="uploadContainer" class="mt-3 d-none">
+        <label for="fileInput" class="form-label">Upload new resume</label>
+        <div id="dropzone" class="dropzone border rounded d-flex flex-column align-items-center justify-content-center p-4 text-center">
+          <input type="file" name="file" id="fileInput" class="d-none" accept=".pdf,.doc,.docx" />
+          <i class="bi bi-cloud-arrow-up fs-1 mb-2"></i>
+          <strong>Drop your resume here</strong>
+          <div class="small text-muted">or click to browse (PDF/DOC)</div>
+          <div id="selectedFile" class="small mt-2 text-truncate" style="max-width:240px;"></div>
         </div>
       </div>
     </div>
@@ -172,6 +186,46 @@
   })();
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const cardExisting = document.getElementById("card-existing");
+    const cardUpload = document.getElementById("card-upload");
+    const existingContainer = document.getElementById("existingContainer");
+    const uploadContainer = document.getElementById("uploadContainer");
+
+    function setActive(choice) {
+      if (choice === "existing") {
+        cardExisting.classList.add("active");
+        cardUpload.classList.remove("active");
+        existingContainer.classList.remove("d-none");
+        uploadContainer.classList.add("d-none");
+      } else {
+        cardUpload.classList.add("active");
+        cardExisting.classList.remove("active");
+        uploadContainer.classList.remove("d-none");
+        existingContainer.classList.add("d-none");
+      }
+    }
+
+    cardExisting.addEventListener("click", () => setActive("existing"));
+    cardUpload.addEventListener("click", () => setActive("upload"));
+});
+</script>
+
+<style>
+  .choice-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .choice-card:hover {
+    background-color: #f8f9fa;
+  }
+  .choice-card.active {
+    border: 2px solid #0d6efd;
+    background-color: #e7f1ff;
+    box-shadow: 0 0 4px rgba(13,110,253,.3);
+}
+</style>
 
 {% if score %}
 <p>Score: {{score}}</p>
