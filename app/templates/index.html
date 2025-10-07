@@ -227,17 +227,88 @@
 }
 </style>
 
-{% if score %}
-<p>Score: {{score}}</p>
-<style>
-.progress-bar {
-  width: var(--progress-width);
-}
-</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const form = document.querySelector("form");
+  const submitButton = form.querySelector("button[type='submit']");
 
-<div class="progress-bar" style="--progress-width: {{ score }}%;"
-     role="progressbar" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100">
-  {{ score }}%
+  form.addEventListener("submit", function() {
+    // Disable button to prevent multiple clicks
+    submitButton.disabled = true;
+
+    // Change button content to show spinner
+    submitButton.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      Analyzing...
+    `;
+  });
+});
+</script>
+
+<div id="score-section" class="mt-5 mb-5" style="padding-bottom: 80px;">
+{% if score is not none %}
+<div class="mt-5 mb-5 text-center"> <!-- Added bottom margin -->
+    <h4 class="mb-3">Your Resume–Job Match Score</h4>
+
+    <!-- Percentage above the bar -->
+    <div class="fw-bold mb-2" id="score-percentage">0%</div>
+
+    <!-- Progress container -->
+    <div class="progress mx-auto" style="height: 30px; max-width: 500px;">
+        <div class="progress-bar" 
+             role="progressbar" 
+             aria-valuemin="0" 
+             aria-valuemax="100"
+             data-score="{{ score }}"
+             style="width: 0%; transition: width 1s;">
+        </div>
+    </div>
+
+    <!-- Feedback text -->
+    <p id="score-text" class="mt-3 fw-semibold"></p>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const bar = document.querySelector('.progress-bar');
+    const score = parseFloat(bar.dataset.score);
+
+    // Set color based on score
+    const scoreText = document.getElementById('score-text');
+    const scorePercentage = document.getElementById('score-percentage');
+
+    if(score >= 75) {
+        bar.classList.add('bg-success');
+        scoreText.textContent = "Excellent match! Your resume aligns closely with the job description.";
+        scoreText.classList.add('text-success');
+    } else if(score >= 50) {
+        bar.classList.add('bg-warning');
+        scoreText.textContent = "Decent match — consider adding more relevant skills or experience.";
+        scoreText.classList.add('text-warning');
+    } else {
+        bar.classList.add('bg-danger');
+        scoreText.textContent = "Low match — try tailoring your resume for this role.";
+        scoreText.classList.add('text-danger');
+    }
+
+    // Animate width and update percentage outside
+    requestAnimationFrame(() => {
+        bar.style.width = score + '%';
+        scorePercentage.textContent = score.toFixed(1) + '%';
+    });
+
+    // Scroll to score section if score exists
+    const scoreSection = document.getElementById('score-section');
+    if(scoreSection) {
+        // Optional offset if you have a fixed header/footer
+        const yOffset = -70; // adjust based on your sticky footer/header height
+        const y = scoreSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+});
+</script>
+
 {% endif %}
+</div>
+
 {% endblock %}

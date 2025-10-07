@@ -1,5 +1,5 @@
 import os
-from flask import current_app, render_template, request, jsonify
+from flask import current_app, redirect, render_template, request, jsonify, url_for
 from werkzeug.utils import secure_filename
 from ..extensions import db
 from ..models import Resume, Job
@@ -11,13 +11,11 @@ from sentence_transformers import SentenceTransformer, util
 @main.route('/', methods=['POST','GET'])
 def home():
     if request.method=='POST':
-        print (request.form)
         if not('file' in request.files or "existingFile" in request.form) or 'description' not in request.form:
             return jsonify({'error':'Missing fields'}),400
         if "existingFile" in request.form:
             resume_id = request.form["existingFile"]
             text = Resume.query.get(resume_id).parsed_text
-            print ('text',text)
         else:
             file = request.files['file']
             if file.filename=='':
@@ -51,7 +49,8 @@ def home():
         similarity = util.cos_sim(resume_embeddings, job_desc_embeddings)
 
         score = similarity.item()
-        
+        score = round(score * 100, 2)
+
         job_details = Job(
             title=title,
             content=description,
@@ -62,12 +61,15 @@ def home():
 
         db.session.commit()
         print ('score',score)
-        return render_template('index.html', score=score)
+        return redirect(url_for("main.home",score=score))
         
     else:
+        score = request.args.get('score',None)
+        if score:
+            score = float(score)
         resumes = Resume.query.all()
         print (resumes)
         res = []
         for resume in resumes:
             res.append({"id":resume.id, "filename":resume.filename})
-        return render_template('index.html',resumeList=res)
+        return render_template('index.html',resumeList=res, score=score)
