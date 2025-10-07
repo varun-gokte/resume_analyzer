@@ -3,6 +3,7 @@ import os
 from .main import main
 from dotenv import load_dotenv
 from app.extensions import db, migrate
+from flask_migrate import upgrade 
 
 load_dotenv()
 db_username = os.getenv('DB_USERNAME')
@@ -24,5 +25,8 @@ def create_app():
     migrate.init_app(app, db)
 
     app.register_blueprint(main)
+
+    with app.app_context():
+        upgrade()
     
     return app
